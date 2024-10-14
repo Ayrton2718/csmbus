@@ -1,16 +1,16 @@
 #pragma once
 
 #include <vector>
-#include "smbus_type.hpp"
-#include "can_smbus/cs_io.hpp"
+#include "csmbus_type.hpp"
+#include "can_csmbus/cc_io.hpp"
 
 #include "logger/logger.hpp"
-#include <tut_tool/tt_timer.hpp>
+#include "eth_csmbus/ec_timer.hpp"
 
-namespace smbus
+namespace csmbus
 {
 
-class Switch : protected can_smbus::Device
+class Switch : protected can_csmbus::Device
 {
 public:
     Switch()
@@ -21,7 +21,7 @@ public:
     /// @param gw_id 
     /// @param port 
     /// @param id can_id（小基盤の点滅してる数）
-    void init(ESId_t gw_id, ESPort_t port, id_t id)
+    void init(ECId_t gw_id, ECPort_t port, id_t id)
     {
         switch_t sw;
         for(size_t i = 0; i < 7; i++)
@@ -95,9 +95,9 @@ private:
     }
 
 private:
-    RecvRegister<CSReg_0, switch_t> _switch_reg;
+    RecvRegister<CCReg_0, switch_t> _switch_reg;
 
-    virtual void can_callback(CSReg_t reg, uint8_t len, const uint8_t* data)
+    virtual void can_callback(CCReg_t reg, uint8_t len, const uint8_t* data)
     {
         _switch_reg.can_cb(reg, len, data);
     }

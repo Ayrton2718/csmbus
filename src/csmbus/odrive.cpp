@@ -1,13 +1,11 @@
 #include "odrive.hpp"
 
-#include <tut_tool/tut_tool.hpp>
-
-namespace smbus::odrive
+namespace csmbus::odrive
 {
 
 typedef struct
 {
-    tut_tool::RealTimer interval_tim;
+    RealTimer interval_tim;
     std::atomic<uint64_t> max_interval_us;
     Odrive_sensor_t sensor;
     uint32_t befor_err_code;
@@ -15,7 +13,7 @@ typedef struct
 
 typedef struct
 {
-    tut_tool::RealTimer interval_tim;
+    RealTimer interval_tim;
     std::atomic<uint64_t> max_interval_us;
 
     Odrive_power_t power[4];
@@ -26,7 +24,7 @@ typedef struct
 {
     std::map<app_addr_t, bus_info_t> addr_list;
 
-    ESSocket_t sock;
+    ECSocket_t sock;
 
     pthread_mutex_t locker;
     pthread_t recv_th;
@@ -41,7 +39,7 @@ static std::string report_axis_err(uint32_t err_code);
 
 void init(std::set<app_addr_t> addr_list)
 {
-    g_obj.sock = ESSocket_connect(ESEther_appid_ODRIVE);
+    g_obj.sock = ECSocket_connect(ECEther_appid_ODRIVE);
 
 
     // リストからキーを取り出して std::map に挿入
@@ -112,17 +110,17 @@ void init(std::set<app_addr_t> addr_list)
     }
 }
 
-void send_param(ESId_t gw_id, ESPort_t port, id_t number, Odrive_param_t* param)
+void send_param(ECId_t gw_id, ECPort_t port, id_t number, Odrive_param_t* param)
 {
-    ESSocket_addr_t addr;
+    ECSocket_addr_t addr;
     addr.id = gw_id;
     addr.port = port;
-    addr.reg = (ESReg_t)((int)ESReg_8 + (int)number);
+    addr.reg = (ECReg_t)((int)ECReg_8 + (int)number);
 
-    ESSocket_sendAck(g_obj.sock, addr, param, sizeof(Odrive_param_t));
+    ECSocket_sendAck(g_obj.sock, addr, param, sizeof(Odrive_param_t));
 }
 
-void set_power(ESId_t gw_id, ESPort_t port, id_t number, Odrive_power_t* power)
+void set_power(ECId_t gw_id, ECPort_t port, id_t number, Odrive_power_t* power)
 {
     auto it = g_obj.addr_list.find(std::make_pair(gw_id, port));
     if(it != g_obj.addr_list.end())
@@ -133,7 +131,7 @@ void set_power(ESId_t gw_id, ESPort_t port, id_t number, Odrive_power_t* power)
     }
 }
 
-Odrive_sensor_t get_sensor(ESId_t gw_id, ESPort_t port, id_t number)
+Odrive_sensor_t get_sensor(ECId_t gw_id, ECPort_t port, id_t number)
 {
     Odrive_sensor_t sens;
 
@@ -163,7 +161,7 @@ Odrive_sensor_t get_sensor(ESId_t gw_id, ESPort_t port, id_t number)
     return sens;
 }
 
-uint64_t get_max_interval(ESId_t gw_id, ESPort_t port, id_t number, bool is_reset)
+uint64_t get_max_interval(ECId_t gw_id, ECPort_t port, id_t number, bool is_reset)
 {
     uint64_t interval_us = 0;
 
@@ -189,12 +187,12 @@ static void* recv_thread(void* args)
 
     while(1)
     {
-        ESSocket_addr_t addr;
-        uint8_t buff[ESTYPE_PACKET_MAX_SIZE];
+        ECSocket_addr_t addr;
+        uint8_t buff[ECTYPE_PACKET_MAX_SIZE];
         size_t len;
-        if(ESSocket_recv(g_obj.sock, &addr, buff, &len))
+        if(ECSocket_recv(g_obj.sock, &addr, buff, &len))
         {
-            if(ESReg_0 == addr.reg && (len == sizeof(Odrive_sensor_t) * 4))
+            if(ECReg_0 == addr.reg && (len == sizeof(Odrive_sensor_t) * 4))
             {
                 Odrive_sensor_t* sens = (Odrive_sensor_t*)buff;
 
@@ -242,17 +240,17 @@ static void* send_thread(void* args)
     while(1)
     {
         for (auto it = g_obj.addr_list.begin(); it != g_obj.addr_list.end(); ++it) {
-            ESSocket_addr_t addr;
+            ECSocket_addr_t addr;
             addr.id = it->first.first;
             addr.port = it->first.second;
-            addr.reg = ESReg_0;
+            addr.reg = ECReg_0;
             
             Odrive_power_t power_list[4];
             pthread_mutex_lock(&g_obj.locker);
             memcpy(power_list, it->second.power, sizeof(Odrive_power_t)*4);
             pthread_mutex_unlock(&g_obj.locker);
 
-            ESSocket_send(g_obj.sock, addr, power_list, sizeof(Odrive_power_t)*4);
+            ECSocket_send(g_obj.sock, addr, power_list, sizeof(Odrive_power_t)*4);
         }
 
         std::this_thread::sleep_for(std::chrono::microseconds(900));

@@ -1,16 +1,16 @@
 #pragma once
 
 #include <vector>
-#include "smbus_type.hpp"
-#include "can_smbus/cs_io.hpp"
+#include "csmbus_type.hpp"
+#include "can_csmbus/cc_io.hpp"
 
 #include "logger/logger.hpp"
-#include <tut_tool/tt_timer.hpp>
+#include "eth_csmbus/ec_timer.hpp"
 
-namespace smbus
+namespace csmbus
 {
 
-class DistanceSick : protected can_smbus::Device
+class DistanceSick : protected can_csmbus::Device
 {
 public:
     DistanceSick()
@@ -21,7 +21,7 @@ public:
     /// @param gw_id 
     /// @param port 
     /// @param id 
-    void init(ESId_t gw_id, ESPort_t port, id_t id)
+    void init(ECId_t gw_id, ECPort_t port, id_t id)
     {
         laser_t laser;
         laser.laser[0] = 0;
@@ -74,7 +74,7 @@ public:
         }
     }
 
-    tut_tool::RealTimer distance_with_duration(std::array<uint16_t, 4>* distances)
+    RealTimer distance_with_duration(std::array<uint16_t, 4>* distances)
     {
         auto data = _laser_reg.get_data();
         distances->at(0) = data.first.laser[0];
@@ -90,9 +90,9 @@ private:
     }__attribute__((__packed__)) laser_t;
 
 private:
-    RecvRegister<CSReg_0, laser_t> _laser_reg;
+    RecvRegister<CCReg_0, laser_t> _laser_reg;
 
-    virtual void can_callback(CSReg_t reg, uint8_t len, const uint8_t* data)
+    virtual void can_callback(CCReg_t reg, uint8_t len, const uint8_t* data)
     {
         _laser_reg.can_cb(reg, len, data);
     }

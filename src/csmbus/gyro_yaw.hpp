@@ -1,16 +1,16 @@
 #pragma once
 
 #include <vector>
-#include "smbus_type.hpp"
-#include "can_smbus/cs_io.hpp"
+#include "csmbus_type.hpp"
+#include "can_csmbus/cc_io.hpp"
 
 #include "logger/logger.hpp"
-#include <tut_tool/tt_timer.hpp>
+#include "eth_csmbus/ec_timer.hpp"
 
-namespace smbus
+namespace csmbus
 {
 
-class GyroYaw : protected can_smbus::Device
+class GyroYaw : protected can_csmbus::Device
 {
 public:
     GyroYaw()
@@ -22,7 +22,7 @@ public:
     /// @param gw_id 
     /// @param port 
     /// @param id can_id（小基盤の点滅してる数）
-    void init(ESId_t gw_id, ESPort_t port, id_t id)
+    void init(ECId_t gw_id, ECPort_t port, id_t id)
     {
         yaw_t yaw;
         yaw.gyro = 0;
@@ -66,7 +66,7 @@ public:
         return std::make_pair(angle, acc);
     }
 
-    tut_tool::RealTimer get_yaw_with_tim(float* gyro, float* angle)
+    RealTimer get_yaw_with_tim(float* gyro, float* angle)
     {
         auto data = _yaw_reg.get_data();
 
@@ -119,11 +119,11 @@ private:
     }__attribute__((__packed__)) yaw_t;
 
 private:
-    RecvRegister<CSReg_0, yaw_t> _yaw_reg;
+    RecvRegister<CCReg_0, yaw_t> _yaw_reg;
 
     float _offset_yaw;
 
-    virtual void can_callback(CSReg_t reg, uint8_t len, const uint8_t* data)
+    virtual void can_callback(CCReg_t reg, uint8_t len, const uint8_t* data)
     {
         _yaw_reg.can_cb(reg, len, data);
     }

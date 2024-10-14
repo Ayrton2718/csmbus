@@ -2,7 +2,7 @@
 
 #include <blackbox/bb_logger.hpp>
 
-namespace smbus::logger
+namespace csmbus::logger
 {
 
 static std::mutex           g_locker;
@@ -27,10 +27,10 @@ void init(blackbox::LogRecorder* lr, blackbox::DiagnosticUpdater* du)
         if(g_is_initialized == false)
         {
             g_info = std::make_unique<blackbox::Logger>();
-            g_info->init(lr, blackbox::INFO, "smbus");
+            g_info->init(lr, blackbox::INFO, "csmbus");
 
             g_error = std::make_unique<blackbox::Logger>();
-            g_error->init(lr, blackbox::ERR, "smbus");
+            g_error->init(lr, blackbox::ERR, "csmbus");
 
             g_diag_error = std::make_unique<blackbox::Logger>();
             g_diag_error->init(lr, blackbox::ERR, "diag_err");
@@ -41,7 +41,7 @@ void init(blackbox::LogRecorder* lr, blackbox::DiagnosticUpdater* du)
         }
     }
 
-    diagnostic_bind("can_smbus", can_diagnostics_task);
+    diagnostic_bind("can_csmbus", can_diagnostics_task);
 }
 
 void destructor(void)
@@ -131,7 +131,7 @@ void info_out(std::string tag, const char* fmt, ...)
     info_out(tag, str);
 }
 
-void ether_diag_bind(ESId_t gw_id, ESPort_t port, std::string name, diag_cb_t function)
+void ether_diag_bind(ECId_t gw_id, ECPort_t port, std::string name, diag_cb_t function)
 {
     std::string key = "\"eth_" + name + "(" + std::to_string(gw_id + 1) +"-"+ std::to_string(port + 1) +")\"";
     {        
@@ -140,7 +140,7 @@ void ether_diag_bind(ESId_t gw_id, ESPort_t port, std::string name, diag_cb_t fu
     }
 }
 
-void can_diag_bind(ESId_t gw_id, ESPort_t port, smbus::id_t id, std::string name, diag_cb_t function)
+void can_diag_bind(ECId_t gw_id, ECPort_t port, csmbus::id_t id, std::string name, diag_cb_t function)
 {
     std::string key = "\"" + name + "(" + std::to_string(gw_id + 1) +"-"+ std::to_string(port + 1) +"-"+ std::to_string((int)id + 1) +")\"";
     {        

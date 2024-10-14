@@ -1,12 +1,12 @@
 #pragma once
 
 #include <vector>
-#include "smbus_type.hpp"
-#include "eth_smbus/eth_smbus.h"
+#include "csmbus_type.hpp"
+#include "eth_csmbus/eth_csmbus.h"
 
 #include "logger/logger.hpp"
 
-namespace smbus
+namespace csmbus
 {
 
 namespace robomas
@@ -53,10 +53,10 @@ typedef struct
 /// @param add_list 
 void init(std::set<app_addr_t> add_list);
 
-void send_param(ESId_t gw_id, ESPort_t port, id_t number, Robomas_param_t* param);
-void set_power(ESId_t gw_id, ESPort_t port, id_t number, Robomas_power_t* power);
-Robomas_sensor_t get_sensor(ESId_t gw_id, ESPort_t port, id_t number);
-uint64_t get_max_interval(ESId_t gw_id, ESPort_t port, id_t number, bool is_reset);
+void send_param(ECId_t gw_id, ECPort_t port, id_t number, Robomas_param_t* param);
+void set_power(ECId_t gw_id, ECPort_t port, id_t number, Robomas_power_t* power);
+Robomas_sensor_t get_sensor(ECId_t gw_id, ECPort_t port, id_t number);
+uint64_t get_max_interval(ECId_t gw_id, ECPort_t port, id_t number, bool is_reset);
 }
 
 class Robomas
@@ -78,8 +78,8 @@ public:
 
     Robomas()
     {
-        _gw_id = ESId_UNKNOWN;
-        _port = ESPort_1;
+        _gw_id = ECId_UNKNOWN;
+        _port = ECPort_1;
         _id = id_t::_1;
         _mot = mot_t::m2006;
         _mode = (uint8_t)mode_t::disable;
@@ -100,7 +100,7 @@ public:
     /// @param ang_p 角度PIDのP
     /// @param ang_i 角度PIDのI
     /// @param ang_d 角度PIDのD
-    void init(ESId_t gw_id, ESPort_t port, id_t id, mot_t mot, direction_t direction, mode_t mode=mode_t::disable, float max_cur=-1, 
+    void init(ECId_t gw_id, ECPort_t port, id_t id, mot_t mot, direction_t direction, mode_t mode=mode_t::disable, float max_cur=-1, 
                     float rpm_p=5, float rpm_i=0.07, float rpm_d=0.05, float ang_p=5, float ang_i=0.0, float ang_d=0.0)
     {
         if(id_t::_6 < id)
@@ -210,7 +210,7 @@ public:
         power.rpm = 0;
         power.ang = 0;
         robomas::set_power(_gw_id, _port, _id, &power);
-        // TAGGER_INFO("smbus", "robomas", "%d, %d, %d, %f", _gw_id, _port, _id, cur);
+        // TAGGER_INFO("csmbus", "robomas", "%d, %d, %d, %f", _gw_id, _port, _id, cur);
     }
 
     /// @brief 速度制御する。もし、mode_tが違ったら、自動的に上書きされる
@@ -229,7 +229,7 @@ public:
         power.rpm = cut_max_rpm(rpm);
         power.ang = 0;
         robomas::set_power(_gw_id, _port, _id, &power);
-        // TAGGER_INFO("smbus", "robomas", "%d, %d, %d, %d, %f", _gw_id, _port, _id, rpm, base_cur);
+        // TAGGER_INFO("csmbus", "robomas", "%d, %d, %d, %d, %f", _gw_id, _port, _id, rpm, base_cur);
     }
 
 
@@ -253,7 +253,7 @@ public:
         power.rpm = cut_max_rpm(target_rpm);
         power.ang = (int64_t)round(geared_theta);
         robomas::set_power(_gw_id, _port, _id, &power);
-        // TAGGER_INFO("smbus", "robomas", "%d, %d, %d, %f, %d, %f", _gw_id, _port, _id, geared_theta, target_rpm, base_cur);
+        // TAGGER_INFO("csmbus", "robomas", "%d, %d, %d, %f, %d, %f", _gw_id, _port, _id, geared_theta, target_rpm, base_cur);
     }
 
     /// @brief 
@@ -419,8 +419,8 @@ public:
     }
 
 private:
-    ESId_t _gw_id;
-    ESPort_t _port;
+    ECId_t _gw_id;
+    ECPort_t _port;
     id_t _id;
     mot_t _mot;
 
@@ -498,15 +498,15 @@ class RobomasSensor
 public:
     RobomasSensor()
     {
-        _gw_id = ESId_UNKNOWN;
-        _port = ESPort_1;
+        _gw_id = ECId_UNKNOWN;
+        _port = ECPort_1;
         _id = id_t::_1;
         _mot = Robomas::mot_t::m2006;
         _direction = 1;
         _offset_rot = 0;
     }
     
-    void init(ESId_t gw_id, ESPort_t port, id_t id, Robomas::mot_t mot, direction_t act_direction, direction_t sens_direction)
+    void init(ECId_t gw_id, ECPort_t port, id_t id, Robomas::mot_t mot, direction_t act_direction, direction_t sens_direction)
     {
         if(id_t::_6 < id)
         {
@@ -681,8 +681,8 @@ public:
     }
 
 private:
-    ESId_t _gw_id;
-    ESPort_t _port;
+    ECId_t _gw_id;
+    ECPort_t _port;
     id_t _id;
     Robomas::mot_t _mot;
 

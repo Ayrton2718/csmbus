@@ -1,25 +1,32 @@
-#include "cs_type.h"
+/*
+ * cc_type.c
+ *
+ *  Created on: Oct 12, 2023
+ *      Author: sen
+ */
 
-uint16_t CSId_convertId2Num(CSId_t id)
+#include "cc_type.h"
+
+uint16_t CCId_convertId2Num(CCId_t id)
 {
-    if(CSId_1 <= id && id <= CSId_6)
+    if(CCId_1 <= id && id <= CCId_6)
     {
-        return id - CSId_1;
-    }else if(CSId_7 <= id && id <= CSId_12){
-        return (id - CSId_7) + 6;
+        return id - CCId_1;
+    }else if(CCId_7 <= id && id <= CCId_12){
+        return (id - CCId_7) + 6;
     }else{
-        return (CSId_UNKNOWN - CSId_7) + 6;
+        return (CCId_UNKNOWN - CCId_7) + 6;
     }
 }
 
-CSId_t CSId_convertNum2Id(uint8_t num)
+CCId_t CCId_convertNum2Id(uint8_t num)
 {
     if(num <= 5)
     {
-        return num + CSId_1;
+        return num + CCId_1;
     }else if(6 <= num && num <= 11){
-        return CSId_7 + (num - 6);
+        return CCId_7 + (num - 6);
     }else{
-        return CSId_UNKNOWN;
+        return CCId_UNKNOWN;
     }
 }

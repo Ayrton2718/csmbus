@@ -4,10 +4,10 @@
 #include <string>
 
 #include <rclcpp/rclcpp.hpp>
-#include "smbus/eth_smbus/eth_smbus.h"
-#include "smbus/smbus.hpp"
+#include "csmbus/eth_csmbus/eth_csmbus.h"
+#include "csmbus/csmbus.hpp"
 
-using namespace smbus;
+using namespace csmbus;
 
 int main(int argc, char * argv[])
 {
@@ -16,10 +16,10 @@ int main(int argc, char * argv[])
     rclcpp::executors::MultiThreadedExecutor executor;
 
     ether_map_t ether_map = {
-        {ESId_1, ether_app_t::robomas_smbus, ether_app_t::robomas_smbus},
-        {ESId_2, ether_app_t::robomas_smbus, ether_app_t::odrive},
-        {ESId_3, ether_app_t::robomas_smbus, ether_app_t::robomas_smbus},
-        {ESId_4, ether_app_t::robomas_smbus, ether_app_t::odrive}
+        {ECId_1, ether_app_t::robomas_smbus, ether_app_t::robomas_smbus},
+        {ECId_2, ether_app_t::robomas_smbus, ether_app_t::odrive},
+        {ECId_3, ether_app_t::robomas_smbus, ether_app_t::robomas_smbus},
+        {ECId_4, ether_app_t::robomas_smbus, ether_app_t::odrive}
     };
 
     std::shared_ptr<SystemNode> system_node = std::make_shared<SystemNode>();

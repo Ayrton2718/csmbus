@@ -1,5 +1,5 @@
-#ifndef SMBUS_SMBUS_HPP
-#define SMBUS_SMBUS_HPP
+#ifndef CSMBUS_CSMBUS_HPP
+#define CSMBUS_CSMBUS_HPP
 
 #include "robomas.hpp"
 #include "odrive.hpp"
@@ -15,4 +15,4 @@
 #include "gyro_yaw.hpp"
 #include "led_tape.hpp"
 
-#endif /*SMBUS_SMBUS_HPP*/
+#endif /*CSMBUS_CSMBUS_HPP*/

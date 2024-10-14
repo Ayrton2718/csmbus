@@ -1,8 +1,8 @@
-#ifndef ETH_SMBUS_ES_SOCKET_H
-#define ETH_SMBUS_ES_SOCKET_H
+#ifndef ETH_CSMBUS_EC_SOCKET_H
+#define ETH_CSMBUS_EC_SOCKET_H
 
-#include "es_type.h"
-#include "es_ctrl.h"
+#include "ec_type.h"
+#include "ec_ctrl.h"
 
 #include <netinet/in.h>
 
@@ -10,23 +10,23 @@
 extern "C" {
 #endif
 
-typedef void* ESSocket_t;
+typedef void* ECSocket_t;
 
-ESSocket_t ESSocket_connect(ESEther_appid_t appid);
+ECSocket_t ECSocket_connect(ECEther_appid_t appid);
 
 typedef struct
 {
-    ESId_t      id;
-    ESPort_t    port;
-    ESReg_t     reg;
-} ESSocket_addr_t;
+    ECId_t      id;
+    ECPort_t    port;
+    ECReg_t     reg;
+} ECSocket_addr_t;
 
-ESType_bool_t ESSocket_recv(ESSocket_t sock_obj, ESSocket_addr_t* addr, void* data, size_t* data_len);
-void ESSocket_send(ESSocket_t sock_obj, ESSocket_addr_t addr, const void* data, size_t data_len);
-void ESSocket_sendAck(ESSocket_t sock_obj, ESSocket_addr_t addr, const void* data, size_t data_len);
+ECType_bool_t ECSocket_recv(ECSocket_t sock_obj, ECSocket_addr_t* addr, void* data, size_t* data_len);
+void ECSocket_send(ECSocket_t sock_obj, ECSocket_addr_t addr, const void* data, size_t data_len);
+void ECSocket_sendAck(ECSocket_t sock_obj, ECSocket_addr_t addr, const void* data, size_t data_len);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /*ETH_SMBUS_ES_SOCKET_H*/
+#endif /*ETH_CSMBUS_EC_SOCKET_H*/

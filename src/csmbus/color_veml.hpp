@@ -1,16 +1,16 @@
 #pragma once
 
 #include <vector>
-#include "smbus_type.hpp"
-#include "can_smbus/cs_io.hpp"
+#include "csmbus_type.hpp"
+#include "can_csmbus/cc_io.hpp"
 
 #include "logger/logger.hpp"
-#include <tut_tool/tt_timer.hpp>
+#include "eth_csmbus/ec_timer.hpp"
 
-namespace smbus
+namespace csmbus
 {
 
-class ColorVeml : protected can_smbus::Device
+class ColorVeml : protected can_csmbus::Device
 {
 public:
     ColorVeml()
@@ -21,7 +21,7 @@ public:
     /// @param gw_id 
     /// @param port 
     /// @param id can_id（小基盤の点滅してる数）
-    void init(ESId_t gw_id, ESPort_t port, id_t id)
+    void init(ECId_t gw_id, ECPort_t port, id_t id)
     {
         colors_t colors;
         colors.red = 0;
@@ -84,9 +84,9 @@ private:
     }__attribute__((__packed__)) colors_t;
 
 private:
-    RecvRegister<CSReg_0, colors_t> _color_reg;
+    RecvRegister<CCReg_0, colors_t> _color_reg;
 
-    virtual void can_callback(CSReg_t reg, uint8_t len, const uint8_t* data)
+    virtual void can_callback(CCReg_t reg, uint8_t len, const uint8_t* data)
     {
         _color_reg.can_cb(reg, len, data);
     }

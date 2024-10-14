@@ -1,16 +1,16 @@
 #pragma once
 
 #include <vector>
-#include "smbus_type.hpp"
-#include "can_smbus/cs_io.hpp"
+#include "csmbus_type.hpp"
+#include "can_csmbus/cc_io.hpp"
 
 #include "logger/logger.hpp"
-#include <tut_tool/tt_timer.hpp>
+#include "eth_csmbus/ec_timer.hpp"
 
-namespace smbus
+namespace csmbus
 {
 
-class SkyWalker : protected can_smbus::Device
+class SkyWalker : protected can_csmbus::Device
 {
 public:
     SkyWalker()
@@ -21,7 +21,7 @@ public:
     /// @param gw_id 
     /// @param port 
     /// @param id 
-    void init(ESId_t gw_id, ESPort_t port, id_t id, port_t dev_port)
+    void init(ECId_t gw_id, ECPort_t port, id_t id, port_t dev_port)
     {
         this->dev_init(gw_id, port, id);
         _port = dev_port;
@@ -40,7 +40,7 @@ public:
         if(percent < 0 || 100 < percent)
         {
             percent = 0;
-            logger::err_out("can_smbus", "Invalid Power(%f)", percent);
+            logger::err_out("can_csmbus", "Invalid Power(%f)", percent);
         }
 
         sky_t sky;
@@ -56,7 +56,7 @@ public:
             break;
         
         default:
-            logger::err_out("can_smbus", "Invalid Port(%d)", _port);
+            logger::err_out("can_csmbus", "Invalid Port(%d)", _port);
             break;
         }
     }
@@ -68,11 +68,11 @@ private:
 
     port_t _port;
 
-    send_reg_t<ESReg_0, sky_t> _sky1_reg;
-    send_reg_t<ESReg_1, sky_t> _sky2_reg;
+    send_reg_t<ECReg_0, sky_t> _sky1_reg;
+    send_reg_t<ECReg_1, sky_t> _sky2_reg;
 
 private:
-    virtual void can_callback(CSReg_t reg, uint8_t len, const uint8_t* data)
+    virtual void can_callback(CCReg_t reg, uint8_t len, const uint8_t* data)
     {
         (void)(reg);
         (void)(len);

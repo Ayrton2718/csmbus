@@ -1,13 +1,11 @@
 #pragma once
 
 #include "logger/logger.hpp"
-#include "tut_tool/tt_timer.hpp"
-
-#include "eth_smbus/eth_smbus.h"
+#include "eth_csmbus/eth_csmbus.h"
 
 #include "robomas.hpp"
 #include "odrive.hpp"
-#include "can_smbus/cs_io.hpp"
+#include "can_csmbus/cc_io.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <vector>
@@ -15,35 +13,35 @@
 
 #include <blackbox/blackbox.hpp>
 
-namespace smbus
+namespace csmbus
 {
 
 enum class ether_app_t
 {
     none,
     robomas,
-    can_smbus,
+    can_csmbus,
     odrive,
     robomas_smbus,
 };
 
-typedef std::vector<std::tuple<ESId_t, ether_app_t, ether_app_t>> ether_map_t;
+typedef std::vector<std::tuple<ECId_t, ether_app_t, ether_app_t>> ether_map_t;
 
 class SystemNode : public rclcpp::Node, public blackbox::BlackBox, blackbox::DiagnosticUpdater, blackbox::LogRecorder
 {
 public:
     SystemNode(const std::string &name_space="") 
-        : Node("smbus_system", name_space), blackbox::BlackBox(this, blackbox::debug_mode_t::RELEASE), blackbox::DiagnosticUpdater(this, "smbus_io", 0.1), blackbox::LogRecorder(this)
+        : Node("csmbus_system", name_space), blackbox::BlackBox(this, blackbox::debug_mode_t::RELEASE), blackbox::DiagnosticUpdater(this, "csmbus_io", 0.1), blackbox::LogRecorder(this)
     {
         logger::init(this, this);
 
-        ESCtrl_init();
+        ECCtrl_init();
     }
 
     void link_up(const ether_map_t ether_map, const uint32_t timeout_ms=10000){
         this->setup_ether(ether_map, timeout_ms);
 
-        ESCtrl_safetyOff();
+        ECCtrl_safetyOff();
 
     }
 
@@ -55,21 +53,21 @@ public:
 private:
     void setup_ether(const ether_map_t ether_map, const uint32_t timeout_ms)
     {
-        tut_tool::RealTimer tim;
+        RealTimer tim;
         tim.start();
 
-        std::set<ESId_t> id_list;
+        std::set<ECId_t> id_list;
         std::set<app_addr_t> robomas_list;
         std::set<app_addr_t> odrive_list;
-        std::set<app_addr_t> can_smbus_list;
+        std::set<app_addr_t> can_csmbus_list;
 
         for(auto it = ether_map.begin(); it != ether_map.end(); it++)
         {
-            ESId_t id = std::get<0>(*it);
-            ESPort_t port_list[2] = {ESPort_1, ESPort_2};
+            ECId_t id = std::get<0>(*it);
+            ECPort_t port_list[2] = {ECPort_1, ECPort_2};
             ether_app_t app_list[2] = {std::get<1>(*it), std::get<2>(*it)};
 
-            if(id != ESId_UNKNOWN)
+            if(id != ECId_UNKNOWN)
             {
                 id_list.insert(id);
                 for(size_t i = 0; i < 2; i++)
@@ -81,8 +79,8 @@ private:
                         robomas_list.insert(std::make_pair(id, port_list[i]));
                         break;
 
-                    case ether_app_t::can_smbus:
-                        can_smbus_list.insert(std::make_pair(id, port_list[i]));
+                    case ether_app_t::can_csmbus:
+                        can_csmbus_list.insert(std::make_pair(id, port_list[i]));
                         break;
 
                     case ether_app_t::odrive :
@@ -91,7 +89,7 @@ private:
 
                     case ether_app_t::robomas_smbus:
                         robomas_list.insert(std::make_pair(id, port_list[i]));
-                        can_smbus_list.insert(std::make_pair(id, port_list[i]));
+                        can_csmbus_list.insert(std::make_pair(id, port_list[i]));
                         break;
 
                     case ether_app_t::none:
@@ -111,12 +109,12 @@ private:
             logger::info_out("system", "Waiting boot(%d) ...", id);
             RCLCPP_INFO(this->get_logger(),  "Waiting boot(%d) ...", id);
 
-            tut_tool::RealTimer cur_tim;
+            RealTimer cur_tim;
             cur_tim.start();
             bool is_linkup = false;
             while(rclcpp::ok() && (tim.getMs() < timeout_ms || cur_tim.getMs() < 500))
             {
-                if(ESCtrl_isConnected(id)){
+                if(ECCtrl_isConnected(id)){
                     is_linkup = true;
                     break;
                 }
@@ -124,9 +122,9 @@ private:
                 rclcpp::sleep_for(std::chrono::milliseconds(1));
             }
 
-            ESCtrl_reset(id);
-            ESCtrl_reset(id);
-            ESCtrl_reset(id);
+            ECCtrl_reset(id);
+            ECCtrl_reset(id);
+            ECCtrl_reset(id);
             
             if(is_linkup)
             {
@@ -140,7 +138,7 @@ private:
 
         robomas::init(robomas_list);
         odrive::init(odrive_list);
-        can_smbus::io::init(can_smbus_list);
+        can_csmbus::io::init(can_csmbus_list);
     }
 };
 

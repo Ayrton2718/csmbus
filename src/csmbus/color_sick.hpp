@@ -1,16 +1,16 @@
 #pragma once
 
 #include <vector>
-#include "smbus_type.hpp"
-#include "can_smbus/cs_io.hpp"
+#include "csmbus_type.hpp"
+#include "can_csmbus/cc_io.hpp"
 
 #include "logger/logger.hpp"
-#include <tut_tool/tt_timer.hpp>
+#include "eth_csmbus/ec_timer.hpp"
 
-namespace smbus
+namespace csmbus
 {
 
-class ColorSick : protected can_smbus::Device
+class ColorSick : protected can_csmbus::Device
 {
 public:
     ColorSick()
@@ -21,7 +21,7 @@ public:
     /// @param gw_id 
     /// @param port 
     /// @param id 
-    void init(ESId_t gw_id, ESPort_t port, id_t id)
+    void init(ECId_t gw_id, ECPort_t port, id_t id)
     {
         color_t color;
         color.l = 0;
@@ -47,7 +47,7 @@ public:
     /// @return 
     std::array<float, 3> lab(port_t port)
     {
-        std::pair<color_t, tut_tool::RealTimer> data;
+        std::pair<color_t, RealTimer> data;
         switch(port)
         {
         case port_t::_1:
@@ -113,12 +113,12 @@ private:
     }__attribute__((__packed__)) color_t;
 
 private:
-    RecvRegister<CSReg_1, color_t> _color1_reg;
-    RecvRegister<CSReg_2, color_t> _color2_reg;
-    RecvRegister<CSReg_3, color_t> _color3_reg;
-    RecvRegister<CSReg_4, color_t> _color4_reg;
+    RecvRegister<CCReg_1, color_t> _color1_reg;
+    RecvRegister<CCReg_2, color_t> _color2_reg;
+    RecvRegister<CCReg_3, color_t> _color3_reg;
+    RecvRegister<CCReg_4, color_t> _color4_reg;
 
-    virtual void can_callback(CSReg_t reg, uint8_t len, const uint8_t* data)
+    virtual void can_callback(CCReg_t reg, uint8_t len, const uint8_t* data)
     {
         _color1_reg.can_cb(reg, len, data);
         _color2_reg.can_cb(reg, len, data);

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "eth_smbus/es_type.h"
+#include "eth_csmbus/ec_type.h"
 
-namespace smbus
+namespace csmbus
 {
 
 enum struct port_t
@@ -35,6 +35,6 @@ enum struct direction_t
     inverse
 };
 
-typedef std::pair<ESId_t, ESPort_t> app_addr_t;
+typedef std::pair<ECId_t, ECPort_t> app_addr_t;
 
 }

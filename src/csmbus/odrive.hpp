@@ -1,12 +1,12 @@
 #pragma once
 
 #include <vector>
-#include "smbus_type.hpp"
-#include "eth_smbus/eth_smbus.h"
+#include "csmbus_type.hpp"
+#include "eth_csmbus/eth_csmbus.h"
 
 #include "logger/logger.hpp"
 
-namespace smbus
+namespace csmbus
 {
 
 namespace odrive
@@ -77,10 +77,10 @@ typedef struct{
 /// @param add_list 
 void init(std::set<app_addr_t> add_list);
 
-void send_param(ESId_t gw_id, ESPort_t port, id_t number, Odrive_param_t* param);
-void set_power(ESId_t gw_id, ESPort_t port, id_t number, Odrive_power_t* power);
-Odrive_sensor_t get_sensor(ESId_t gw_id, ESPort_t port, id_t number);
-uint64_t get_max_interval(ESId_t gw_id, ESPort_t port, id_t number, bool is_reset);
+void send_param(ECId_t gw_id, ECPort_t port, id_t number, Odrive_param_t* param);
+void set_power(ECId_t gw_id, ECPort_t port, id_t number, Odrive_power_t* power);
+Odrive_sensor_t get_sensor(ECId_t gw_id, ECPort_t port, id_t number);
+uint64_t get_max_interval(ECId_t gw_id, ECPort_t port, id_t number, bool is_reset);
 }
 
 class Odrive
@@ -95,8 +95,8 @@ public:
 
     Odrive()
     {
-        _gw_id = ESId_UNKNOWN;
-        _port = ESPort_1;
+        _gw_id = ECId_UNKNOWN;
+        _port = ECPort_1;
         _id = id_t::_1;
         _direction = 1;
         _offset_pos = 0;
@@ -109,7 +109,7 @@ public:
     /// @param id OdriveのID（Odriveの設定で、(3<<3 | ID)のようにしておく）
     /// @param direction 回転方向
     /// @param mode モード
-    void init(ESId_t gw_id, ESPort_t port, id_t id, direction_t direction, mode_t mode=mode_t::disable)
+    void init(ECId_t gw_id, ECPort_t port, id_t id, direction_t direction, mode_t mode=mode_t::disable)
     {
         if(id_t::_4 < id)
         {
@@ -184,7 +184,7 @@ public:
         power.torque = torque * _direction;
         power.velocity = 0;
         odrive::set_power(_gw_id, _port, _id, &power);
-        // TAGGER_INFO("smbus", "odrive", "%d, %d, %d, %f", _gw_id, _port, _id, cur);
+        // TAGGER_INFO("csmbus", "odrive", "%d, %d, %d, %f", _gw_id, _port, _id, cur);
     }
 
 
@@ -203,7 +203,7 @@ public:
         power.torque = torque * _direction;
         power.velocity = velocity * _direction;
         odrive::set_power(_gw_id, _port, _id, &power);
-        // TAGGER_INFO("smbus", "odrive", "%d, %d, %d, %f", _gw_id, _port, _id, cur);
+        // TAGGER_INFO("csmbus", "odrive", "%d, %d, %d, %f", _gw_id, _port, _id, cur);
     }
 
 
@@ -309,8 +309,8 @@ public:
     }
 
 private:
-    ESId_t _gw_id;
-    ESPort_t _port;
+    ECId_t _gw_id;
+    ECPort_t _port;
     id_t _id;
 
     int8_t _direction;
@@ -326,13 +326,13 @@ class OdriveSensor
 public:
     OdriveSensor()
     {
-        _gw_id = ESId_UNKNOWN;
-        _port = ESPort_1;
+        _gw_id = ECId_UNKNOWN;
+        _port = ECPort_1;
         _id = id_t::_1;
         _direction = 1;
     }
 
-    void init(ESId_t gw_id, ESPort_t port, id_t id, direction_t act_direction, direction_t sens_direction)
+    void init(ECId_t gw_id, ECPort_t port, id_t id, direction_t act_direction, direction_t sens_direction)
     {
         if(id_t::_4 < id)
         {
@@ -450,8 +450,8 @@ public:
     }
 
 private:
-    ESId_t _gw_id;
-    ESPort_t _port;
+    ECId_t _gw_id;
+    ECPort_t _port;
     id_t _id;
 
     int8_t _direction;

@@ -1,4 +1,4 @@
-#include "es_ctrl.h"
+#include "ec_ctrl.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -6,26 +6,26 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <errno.h>
-#include "es_ctrl_type.h"
+#include "ec_ctrl_type.h"
 
 #include "../logger/logger.hpp"
-#include <tut_tool/tt_timer.hpp>
+#include "ec_timer.hpp"
 
-using namespace smbus;
+using namespace csmbus;
 
 typedef struct
 {
     volatile uint8_t    flg;
     uint64_t            timeout[2];
-    ESEther_appid_t     port1[2];
-    ESEther_appid_t     port2[2];
-} ESCtrl_gwStatus_t;
+    ECEther_appid_t     port1[2];
+    ECEther_appid_t     port2[2];
+} ECCtrl_gwStatus_t;
 
 typedef struct
 {
-    pthread_t ctrl_recv_thread;
-    tut_tool::RealTimer     tim;
-    ESCtrl_gwStatus_t     gw_status[ES_ID_MAX_COUNT];
+    pthread_t               ctrl_recv_thread;
+    RealTimer               tim;
+    ECCtrl_gwStatus_t       gw_status[EC_ID_MAX_COUNT];
 
     uint8_t ctrl_send_seq;
     uint32_t ctrl_host_seed;
@@ -34,15 +34,15 @@ typedef struct
     int ctrl_send_sock;
     struct sockaddr_in ctrl_send_addrs;
     volatile uint8_t is_safety_on;
-} ESCtrl_info_t;
+} ECCtrl_info_t;
 
-static ESCtrl_info_t g_obj;
+static ECCtrl_info_t g_obj;
 
-static void* ESCtrl_ctrlRecvThread(void* args);
-static void* ESCtrl_safetyThread(void* args);
+static void* ECCtrl_ctrlRecvThread(void* args);
+static void* ECCtrl_safetyThread(void* args);
 
 
-void ESCtrl_init(void)
+void ECCtrl_init(void)
 {
     g_obj.tim.start();
 
@@ -56,15 +56,15 @@ void ESCtrl_init(void)
     pthread_mutex_init(&g_obj.ctrl_send_locker, NULL);
     g_obj.is_safety_on = 1;
 
-    for(uint32_t gw_id = ESId_1; gw_id < ES_ID_MAX_COUNT; gw_id++)
+    for(uint32_t gw_id = ECId_1; gw_id < EC_ID_MAX_COUNT; gw_id++)
     {
         g_obj.gw_status[gw_id].flg = 0;
         g_obj.gw_status[gw_id].timeout[0] = 0;
         g_obj.gw_status[gw_id].timeout[1] = 0;
-        g_obj.gw_status[gw_id].port1[0] = ESEther_appid_NONE;
-        g_obj.gw_status[gw_id].port1[1] = ESEther_appid_NONE;
-        g_obj.gw_status[gw_id].port2[0] = ESEther_appid_NONE;
-        g_obj.gw_status[gw_id].port2[1] = ESEther_appid_NONE;
+        g_obj.gw_status[gw_id].port1[0] = ECEther_appid_NONE;
+        g_obj.gw_status[gw_id].port1[1] = ECEther_appid_NONE;
+        g_obj.gw_status[gw_id].port2[0] = ECEther_appid_NONE;
+        g_obj.gw_status[gw_id].port2[1] = ECEther_appid_NONE;
     }
 
     srand((unsigned int)time(NULL));
@@ -73,17 +73,17 @@ void ESCtrl_init(void)
     logger::info_out("eth_smbus", "my_host_id : %d", g_obj.ctrl_host_seed);
 
     g_obj.ctrl_send_addrs.sin_family = AF_INET;
-    g_obj.ctrl_send_addrs.sin_port = htons(ESTYPE_CTRL_M2S_PORT);
+    g_obj.ctrl_send_addrs.sin_port = htons(ECTYPE_CTRL_M2S_PORT);
     
     int res;
     
-    res = pthread_create(&g_obj.ctrl_recv_thread, NULL, ESCtrl_ctrlRecvThread, NULL);
+    res = pthread_create(&g_obj.ctrl_recv_thread, NULL, ECCtrl_ctrlRecvThread, NULL);
     if(res != 0)
     {
         logger::err_out("eth_smbus", "Pthread_create failed by \"%s, %d\"", strerror(errno), res);
     }
 
-    res = pthread_create(&g_obj.ctrl_send_thread, NULL, ESCtrl_safetyThread, NULL);
+    res = pthread_create(&g_obj.ctrl_send_thread, NULL, ECCtrl_safetyThread, NULL);
     if(res != 0)
     {
         logger::err_out("eth_smbus", "Pthread_create failed by \"%s, %d\"", strerror(errno), res);
@@ -91,33 +91,33 @@ void ESCtrl_init(void)
 }
 
 
-ESType_bool_t ESCtrl_isConnected(ESId_t gw_id)
+ECType_bool_t ECCtrl_isConnected(ECId_t gw_id)
 {
     uint8_t flg = g_obj.gw_status[gw_id].flg;
     if(g_obj.tim.getMs() < g_obj.gw_status[gw_id].timeout[flg])
     {
-        return ESTYPE_TRUE;
+        return ECTYPE_TRUE;
     }else{
-        return ESTYPE_FALSE;
+        return ECTYPE_FALSE;
     }
 }
 
-void ESCtrl_reset(ESId_t gw_id)
+void ECCtrl_reset(ECId_t gw_id)
 {
     typedef struct{
-        ESEther_header_t header;
-        ESCtrl_m2sResetPacket_t msg;
+        ECEther_header_t header;
+        ECCtrl_m2sResetPacket_t msg;
     }__attribute__((__packed__)) packet_t;
 
     packet_t packet;
     packet.header.seq = 0;
-    packet.header.reg_type = ESCtrl_m2sRegType_RESET;
+    packet.header.reg_type = ECCtrl_m2sRegType_RESET;
     packet.header.ack = 0;
     packet.msg.host_seed = g_obj.ctrl_host_seed;
 
     pthread_mutex_lock(&g_obj.ctrl_send_locker);
     packet.header.seq = ++g_obj.ctrl_send_seq;
-    g_obj.ctrl_send_addrs.sin_addr.s_addr = ESCtrl_id_to_ip((ESId_t)gw_id);
+    g_obj.ctrl_send_addrs.sin_addr.s_addr = ECCtrl_id_to_ip((ECId_t)gw_id);
     int res = sendto(g_obj.ctrl_send_sock, &packet, sizeof(packet_t), 0, (struct sockaddr*)&g_obj.ctrl_send_addrs, sizeof(struct sockaddr_in));
     if((int)sizeof(packet_t) != res)
     {
@@ -128,7 +128,7 @@ void ESCtrl_reset(ESId_t gw_id)
 }
 
 
-void* ESCtrl_ctrlRecvThread(void* args)
+void* ECCtrl_ctrlRecvThread(void* args)
 {
     (void)(args);
 
@@ -139,7 +139,7 @@ void* ESCtrl_ctrlRecvThread(void* args)
     }
     struct sockaddr_in ctrl_recv_addr;
     ctrl_recv_addr.sin_family = AF_INET;
-    ctrl_recv_addr.sin_port = htons(ESTYPE_CTRL_S2M_PORT);
+    ctrl_recv_addr.sin_port = htons(ECTYPE_CTRL_S2M_PORT);
     ctrl_recv_addr.sin_addr.s_addr = INADDR_ANY;
     int res = bind(sock, (struct sockaddr*)&ctrl_recv_addr, sizeof(ctrl_recv_addr));
     if(res < 0)
@@ -158,19 +158,19 @@ void* ESCtrl_ctrlRecvThread(void* args)
         {
             logger::err_out("eth_smbus", "recvfrom failed by \"%s, %d\".", strerror(errno), len);
             continue;
-        }else if(ESTYPE_PACKET_MAX_SIZE < len){
+        }else if(ECTYPE_PACKET_MAX_SIZE < len){
             logger::err_out("eth_smbus", "Packet over size(%d byte).", len);
             continue;
         }
 
-        if((int)sizeof(ESEther_header_t) <= len)
+        if((int)sizeof(ECEther_header_t) <= len)
         {
-            ESId_t id = ESCtrl_ip_to_id(client_address.sin_addr.s_addr);
-            ESEther_header_t* header = (ESEther_header_t*)buff;
+            ECId_t id = ECCtrl_ip_to_id(client_address.sin_addr.s_addr);
+            ECEther_header_t* header = (ECEther_header_t*)buff;
             switch(header->reg_type)
             {
-            case ESCtrl_s2mRegType_PING:{
-                if(len == sizeof(ESEther_header_t) + sizeof(ESCtrl_s2mPingPacket_t)){
+            case ECCtrl_s2mRegType_PING:{
+                if(len == sizeof(ECEther_header_t) + sizeof(ECCtrl_s2mPingPacket_t)){
                     uint8_t flg = !g_obj.gw_status[id].flg;
                     g_obj.gw_status[id].timeout[flg] = g_obj.tim.getMs() + 1000;
                     g_obj.gw_status[id].flg = flg;
@@ -186,30 +186,30 @@ void* ESCtrl_ctrlRecvThread(void* args)
 
 
 
-void ESCtrl_safetyOff(void)
+void ECCtrl_safetyOff(void)
 {
     typedef struct{
-        ESEther_header_t header;
-        ESCtrl_m2sPingPacket_t msg;
+        ECEther_header_t header;
+        ECCtrl_m2sPingPacket_t msg;
     }__attribute__((__packed__)) packet_t;
 
-    packet_t packet[ES_ID_MAX_COUNT];
+    packet_t packet[EC_ID_MAX_COUNT];
 
-    for(uint32_t gw_id = ESId_1; gw_id < ES_ID_MAX_COUNT; gw_id++)
+    for(uint32_t gw_id = ECId_1; gw_id < EC_ID_MAX_COUNT; gw_id++)
     {   
         packet[gw_id].header.seq = 0;
-        packet[gw_id].header.reg_type = ESCtrl_m2sRegType_PING;
+        packet[gw_id].header.reg_type = ECCtrl_m2sRegType_PING;
         packet[gw_id].header.ack = 0;
         packet[gw_id].msg.is_safety_on = 0;
     }
 
     pthread_mutex_lock(&g_obj.ctrl_send_locker);
     g_obj.is_safety_on = 0;
-    for(uint32_t gw_id = ESId_1; gw_id < ES_ID_MAX_COUNT; gw_id++)
+    for(uint32_t gw_id = ECId_1; gw_id < EC_ID_MAX_COUNT; gw_id++)
     {
         packet[gw_id].header.seq = ++g_obj.ctrl_send_seq;
         packet[gw_id].msg.is_safety_on = g_obj.is_safety_on;
-        g_obj.ctrl_send_addrs.sin_addr.s_addr = ESCtrl_id_to_ip((ESId_t)gw_id);
+        g_obj.ctrl_send_addrs.sin_addr.s_addr = ECCtrl_id_to_ip((ECId_t)gw_id);
         int res = sendto(g_obj.ctrl_send_sock, &packet[gw_id], sizeof(packet_t), 0, (struct sockaddr*)&g_obj.ctrl_send_addrs, sizeof(struct sockaddr_in));
         if((int)sizeof(packet_t) != res)
         {
@@ -220,30 +220,30 @@ void ESCtrl_safetyOff(void)
     pthread_mutex_unlock(&g_obj.ctrl_send_locker);
 }
 
-void ESCtrl_safetyOn(void)
+void ECCtrl_safetyOn(void)
 {
     typedef struct{
-        ESEther_header_t header;
-        ESCtrl_m2sPingPacket_t msg;
+        ECEther_header_t header;
+        ECCtrl_m2sPingPacket_t msg;
     }__attribute__((__packed__)) packet_t;
 
-    packet_t packet[ES_ID_MAX_COUNT];
+    packet_t packet[EC_ID_MAX_COUNT];
 
-    for(uint32_t gw_id = ESId_1; gw_id < ES_ID_MAX_COUNT; gw_id++)
+    for(uint32_t gw_id = ECId_1; gw_id < EC_ID_MAX_COUNT; gw_id++)
     {   
         packet[gw_id].header.seq = 0;
-        packet[gw_id].header.reg_type = ESCtrl_m2sRegType_PING;
+        packet[gw_id].header.reg_type = ECCtrl_m2sRegType_PING;
         packet[gw_id].header.ack = 0;
         packet[gw_id].msg.is_safety_on = 0;
     }
 
     pthread_mutex_lock(&g_obj.ctrl_send_locker);
     g_obj.is_safety_on = 1;
-    for(uint32_t gw_id = ESId_1; gw_id < ES_ID_MAX_COUNT; gw_id++)
+    for(uint32_t gw_id = ECId_1; gw_id < EC_ID_MAX_COUNT; gw_id++)
     {
         packet[gw_id].header.seq = ++g_obj.ctrl_send_seq;
         packet[gw_id].msg.is_safety_on = g_obj.is_safety_on;
-        g_obj.ctrl_send_addrs.sin_addr.s_addr = ESCtrl_id_to_ip((ESId_t)gw_id);
+        g_obj.ctrl_send_addrs.sin_addr.s_addr = ECCtrl_id_to_ip((ECId_t)gw_id);
         int res = sendto(g_obj.ctrl_send_sock, &packet[gw_id], sizeof(packet_t), 0, (struct sockaddr*)&g_obj.ctrl_send_addrs, sizeof(struct sockaddr_in));
         if((int)sizeof(packet_t) != res)
         {
@@ -254,21 +254,21 @@ void ESCtrl_safetyOn(void)
     pthread_mutex_unlock(&g_obj.ctrl_send_locker);
 }
 
-void* ESCtrl_safetyThread(void* args)
+void* ECCtrl_safetyThread(void* args)
 {
     (void)(args);
 
     typedef struct{
-        ESEther_header_t header;
-        ESCtrl_m2sPingPacket_t msg;
+        ECEther_header_t header;
+        ECCtrl_m2sPingPacket_t msg;
     }__attribute__((__packed__)) packet_t;
 
-    packet_t packet[ES_ID_MAX_COUNT];
+    packet_t packet[EC_ID_MAX_COUNT];
 
-    for(uint32_t gw_id = ESId_1; gw_id < ES_ID_MAX_COUNT; gw_id++)
+    for(uint32_t gw_id = ECId_1; gw_id < EC_ID_MAX_COUNT; gw_id++)
     {   
         packet[gw_id].header.seq = 0;
-        packet[gw_id].header.reg_type = ESCtrl_m2sRegType_PING;
+        packet[gw_id].header.reg_type = ECCtrl_m2sRegType_PING;
         packet[gw_id].header.ack = 0;
         packet[gw_id].msg.is_safety_on = 1;
     }
@@ -276,11 +276,11 @@ void* ESCtrl_safetyThread(void* args)
     while(1)
     {
         pthread_mutex_lock(&g_obj.ctrl_send_locker);
-        for(uint32_t gw_id = ESId_1; gw_id < ES_ID_MAX_COUNT; gw_id++)
+        for(uint32_t gw_id = ECId_1; gw_id < EC_ID_MAX_COUNT; gw_id++)
         {
             packet[gw_id].header.seq = ++g_obj.ctrl_send_seq;
             packet[gw_id].msg.is_safety_on = g_obj.is_safety_on;
-            g_obj.ctrl_send_addrs.sin_addr.s_addr = ESCtrl_id_to_ip((ESId_t)gw_id);
+            g_obj.ctrl_send_addrs.sin_addr.s_addr = ECCtrl_id_to_ip((ECId_t)gw_id);
             int res = sendto(g_obj.ctrl_send_sock, &packet[gw_id], sizeof(packet_t), 0, (struct sockaddr*)&g_obj.ctrl_send_addrs, sizeof(struct sockaddr_in));
             if((int)sizeof(packet_t) != res)
             {
@@ -290,32 +290,32 @@ void* ESCtrl_safetyThread(void* args)
         rclcpp::sleep_for(std::chrono::microseconds(1));
         pthread_mutex_unlock(&g_obj.ctrl_send_locker);
 
-        tut_tool::RealTimer::sleep_ms(200);
+        RealTimer::sleep_ms(200);
     }
 }
 
 
-in_addr_t ESCtrl_id_to_ip(ESId_t id)
+in_addr_t ECCtrl_id_to_ip(ECId_t id)
 {
     in_addr_t ip_as_integer = 0;
-    ip_as_integer |= ((ESTYPE_GW_IP4 + id) << 24);
-    ip_as_integer |= (ESTYPE_GW_IP3 << 16);
-    ip_as_integer |= (ESTYPE_GW_IP2 << 8);
-    ip_as_integer |= (ESTYPE_GW_IP1 << 0);
+    ip_as_integer |= ((ECTYPE_GW_IP4 + id) << 24);
+    ip_as_integer |= (ECTYPE_GW_IP3 << 16);
+    ip_as_integer |= (ECTYPE_GW_IP2 << 8);
+    ip_as_integer |= (ECTYPE_GW_IP1 << 0);
     return ip_as_integer;
 }
 
-ESId_t ESCtrl_ip_to_id(in_addr_t ip)
+ECId_t ECCtrl_ip_to_id(in_addr_t ip)
 {
     uint32_t ip4 = (ip & 0xFF000000) >> 24;
-    if(ESTYPE_GW_IP4 <= ip4)
+    if(ECTYPE_GW_IP4 <= ip4)
     {
-        ip4 = ip4 - ESTYPE_GW_IP4;
-        if(ip4 <= ES_ID_MAX_COUNT)
+        ip4 = ip4 - ECTYPE_GW_IP4;
+        if(ip4 <= EC_ID_MAX_COUNT)
         {
-            return (ESId_t)ip4;
+            return (ECId_t)ip4;
         }
     }
 
-    return ESId_UNKNOWN;
+    return ECId_UNKNOWN;
 }

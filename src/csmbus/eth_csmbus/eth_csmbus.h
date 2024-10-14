@@ -1,8 +1,9 @@
-#ifndef ETH_SMBUS_ES_SMBUS_H
-#define ETH_SMBUS_ES_SMBUS_H
+#ifndef ETH_CSMBUS_ETH_CSMBUS_H
+#define ETH_CSMBUS_ETH_CSMBUS_H
 
-#include "es_type.h"
-#include "es_ctrl.h"
-#include "es_socket.h"
+#include "ec_type.h"
+#include "ec_ctrl.h"
+#include "ec_socket.h"
+#include "ec_timer.hpp"
 
-#endif /*ETH_SMBUS_ES_SMBUS_H*/
+#endif /*ETH_CSMBUS_ETH_CSMBUS_H*/

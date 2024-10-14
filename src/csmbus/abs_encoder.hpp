@@ -1,16 +1,16 @@
 #pragma once
 
 #include <vector>
-#include "smbus_type.hpp"
-#include "can_smbus/cs_io.hpp"
+#include "csmbus_type.hpp"
+#include "can_csmbus/cc_io.hpp"
 
 #include "logger/logger.hpp"
-#include <tut_tool/tt_timer.hpp>
+#include "eth_csmbus/ec_timer.hpp"
 
-namespace smbus
+namespace csmbus
 {
 
-class AbsEncoder : protected can_smbus::Device
+class AbsEncoder : protected can_csmbus::Device
 {
 public:
     AbsEncoder()
@@ -27,7 +27,7 @@ public:
     /// @param gw_id 
     /// @param port 
     /// @param id can_id（小基盤の点滅してる数）
-    void init(ESId_t gw_id, ESPort_t port, id_t id)
+    void init(ECId_t gw_id, ECPort_t port, id_t id)
     {
         this->dev_init(gw_id, port, id);
 
@@ -98,7 +98,7 @@ public:
         _offset_rad = angle - offset_rad;
     }
 
-    tut_tool::RealTimer get_rot_with_tim(double* rot)
+    RealTimer get_rot_with_tim(double* rot)
     {
         count_t count;
         auto tim = __get_count_with_tim(&count);
@@ -150,7 +150,7 @@ private:
     count_t _count;
 
     bool _is_obtained;
-    tut_tool::RealTimer _timeout;
+    RealTimer _timeout;
 
     count_t __get_count(void)
     {
@@ -164,22 +164,22 @@ private:
         return _is_obtained;
     }
 
-    tut_tool::RealTimer __get_timeout(void)
+    RealTimer __get_timeout(void)
     {
         std::lock_guard<std::mutex> lock(_locker);
         return _timeout;
     }
 
-    tut_tool::RealTimer __get_count_with_tim(count_t* count)
+    RealTimer __get_count_with_tim(count_t* count)
     {
         std::lock_guard<std::mutex> lock(_locker);
         *count = _count;
         return _timeout;
     }
 
-    virtual void can_callback(CSReg_t reg, uint8_t len, const uint8_t* data)
+    virtual void can_callback(CCReg_t reg, uint8_t len, const uint8_t* data)
     {
-        if((reg == CSReg_0) && (len == sizeof(count_t)))
+        if((reg == CCReg_0) && (len == sizeof(count_t)))
         {
             std::lock_guard<std::mutex> lock(_locker);
             const count_t* data_count = (const count_t*)data;
@@ -188,7 +188,7 @@ private:
                 _is_obtained = true;
                 _timeout.reset();
             }else{
-                logger::err_out("can_smbus", "Invalid data gw_id(%d),port(%d),id(%d)", _gw_id, _port, _can_id);
+                logger::err_out("can_csmbus", "Invalid data gw_id(%d),port(%d),id(%d)", _gw_id, _port, _can_id);
             }
         }
     }

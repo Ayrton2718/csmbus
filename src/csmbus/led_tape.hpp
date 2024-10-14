@@ -1,16 +1,16 @@
 #pragma once
 
 #include <vector>
-#include "smbus_type.hpp"
-#include "can_smbus/cs_io.hpp"
+#include "csmbus_type.hpp"
+#include "can_csmbus/cc_io.hpp"
 
 #include "logger/logger.hpp"
-#include <tut_tool/tt_timer.hpp>
+#include "eth_csmbus/ec_timer.hpp"
 
-namespace smbus
+namespace csmbus
 {
 
-class LedTape : protected can_smbus::Device
+class LedTape : protected can_csmbus::Device
 {
 public:
     LedTape()
@@ -22,7 +22,7 @@ public:
     /// @param port 
     /// @param id 
     /// @param send_cycle_ms 送信周期
-    void init(ESId_t gw_id, ESPort_t port, id_t id, uint32_t send_cycle_ms=100)
+    void init(ECId_t gw_id, ECPort_t port, id_t id, uint32_t send_cycle_ms=100)
     {
         this->dev_init(gw_id, port, id);
 
@@ -59,12 +59,12 @@ private:
         uint8_t hz; // hz * 10
     }__attribute__((__packed__)) led_tape_t;
 
-    tut_tool::RealTimer _tim;
+    RealTimer _tim;
     uint32_t _send_cycle_ms;
 
     led_tape_t _befor_send;
 
-    send_reg_t<ESReg_0, led_tape_t> _rgb_reg;
+    send_reg_t<ECReg_0, led_tape_t> _rgb_reg;
 
 private:
     bool is_same_order(led_tape_t* now, led_tape_t* befor){
@@ -76,7 +76,7 @@ private:
         }
     }
 
-    virtual void can_callback(CSReg_t reg, uint8_t len, const uint8_t* data)
+    virtual void can_callback(CCReg_t reg, uint8_t len, const uint8_t* data)
     {
         (void)(reg);
         (void)(len);
