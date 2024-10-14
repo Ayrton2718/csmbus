@@ -15,4 +15,4 @@ fi
 echo $CMAKE_ARGS
 
 source /opt/ros/humble/setup.bash
-colcon build --parallel-workers 4 --symlink-install --cmake-args $CMAKE_ARGS --packages-up-to smbus
+colcon build --parallel-workers 4 --symlink-install --cmake-args $CMAKE_ARGS --packages-up-to csmbus

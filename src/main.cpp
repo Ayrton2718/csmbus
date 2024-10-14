@@ -6,7 +6,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include "smbus/eth_smbus/eth_smbus.h"
 #include "smbus/smbus.hpp"
-#include "ems_node.hpp"
 
 using namespace smbus;
 
@@ -26,7 +25,6 @@ int main(int argc, char * argv[])
     std::shared_ptr<SystemNode> system_node = std::make_shared<SystemNode>();
     std::vector<std::shared_ptr<rclcpp::Node>> node;
     node.push_back(system_node);
-    node.push_back(std::make_shared<EmsNode>());
 
     system_node->link_up(ether_map, 500);
 

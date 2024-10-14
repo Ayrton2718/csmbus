@@ -8,7 +8,7 @@ from ament_index_python.packages import get_package_share_directory
 from ament_index_python.packages import get_package_prefix
 import subprocess
 
-package_name = 'smbus'
+package_name = 'csmbus'
 
 def generate_launch_description():
     subprocess.run(["blackbox_create"]) 
@@ -16,9 +16,9 @@ def generate_launch_description():
     ld = LaunchDescription()
     
     ld.add_action(Node(
-        package='smbus',
+        package=package_name,
         namespace='',
-        executable='smbus',
+        executable='csmbus',
         parameters=[
         ]
     ))
