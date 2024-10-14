@@ -16,10 +16,10 @@ int main(int argc, char * argv[])
     rclcpp::executors::MultiThreadedExecutor executor;
 
     ether_map_t ether_map = {
-        {ECId_1, ether_app_t::robomas_smbus, ether_app_t::robomas_smbus},
-        {ECId_2, ether_app_t::robomas_smbus, ether_app_t::odrive},
-        {ECId_3, ether_app_t::robomas_smbus, ether_app_t::robomas_smbus},
-        {ECId_4, ether_app_t::robomas_smbus, ether_app_t::odrive}
+        {ECId_1, ether_app_t::robomas_csmbus, ether_app_t::robomas_csmbus},
+        {ECId_2, ether_app_t::robomas_csmbus, ether_app_t::odrive},
+        {ECId_3, ether_app_t::robomas_csmbus, ether_app_t::robomas_csmbus},
+        {ECId_4, ether_app_t::robomas_csmbus, ether_app_t::odrive}
     };
 
     std::shared_ptr<SystemNode> system_node = std::make_shared<SystemNode>();

@@ -22,7 +22,7 @@ enum class ether_app_t
     robomas,
     can_csmbus,
     odrive,
-    robomas_smbus,
+    robomas_csmbus,
 };
 
 typedef std::vector<std::tuple<ECId_t, ether_app_t, ether_app_t>> ether_map_t;
