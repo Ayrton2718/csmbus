@@ -27,13 +27,13 @@ enum class ether_app_t
 
 typedef std::vector<std::tuple<ECId_t, ether_app_t, ether_app_t>> ether_map_t;
 
-class SystemNode : public rclcpp::Node, public blackbox::BlackBox, blackbox::DiagnosticUpdater, blackbox::LogRecorder
+class SystemNode : public rclcpp::Node, public blackbox::BlackBox, blackbox::LogRecorder
 {
 public:
     SystemNode(const std::string &name_space="") 
-        : Node("csmbus_system", name_space), blackbox::BlackBox(this, blackbox::debug_mode_t::RELEASE), blackbox::DiagnosticUpdater(this, "csmbus_io", 0.1), blackbox::LogRecorder(this)
+        : Node("csmbus_system", name_space), blackbox::BlackBox(this, blackbox::debug_mode_t::RELEASE), blackbox::LogRecorder(this)
     {
-        logger::init(this, this);
+        logger::init(static_cast<rclcpp::Node*>(this), static_cast<blackbox::LogRecorder*>(this));
 
         ECCtrl_init();
     }
@@ -87,7 +87,7 @@ private:
                         odrive_list.insert(std::make_pair(id, port_list[i]));
                         break;
 
-                    case ether_app_t::robomas_smbus:
+                    case ether_app_t::robomas_csmbus:
                         robomas_list.insert(std::make_pair(id, port_list[i]));
                         can_csmbus_list.insert(std::make_pair(id, port_list[i]));
                         break;

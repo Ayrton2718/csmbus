@@ -7,7 +7,6 @@
 #include "../csmbus_type.hpp"
 
 #include <blackbox/bb_logger.hpp>
-#include <blackbox/bb_diagnostics.hpp>
 
 namespace csmbus::logger
 {
@@ -19,7 +18,7 @@ struct diagnostic_t{
 
 typedef std::function<diagnostic_t(void)> diag_cb_t;
 
-void init(blackbox::LogRecorder* lr, blackbox::DiagnosticUpdater* du);
+void init(rclcpp::Node* node, blackbox::LogRecorder* lr);
 void destructor(void);
 
 void err_out(std::string tag, std::string str);

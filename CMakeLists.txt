@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(csmbus)
 
 find_package(tutrc_ament_node REQUIRED)
+find_package(diagnostic_updater REQUIRED)
 
 tutrc_ament_init()
 

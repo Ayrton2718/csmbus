@@ -1,6 +1,7 @@
 #include "logger.hpp"
 
 #include <blackbox/bb_logger.hpp>
+#include <diagnostic_updater/diagnostic_updater.hpp>
 
 namespace csmbus::logger
 {
@@ -9,18 +10,18 @@ static std::mutex           g_locker;
 volatile static bool        g_is_initialized = false;
 
 
-static std::unique_ptr<blackbox::Logger>    g_info = nullptr;
-static std::unique_ptr<blackbox::Logger>    g_error = nullptr;
-static std::unique_ptr<blackbox::Logger>    g_diag_error = nullptr;
-static blackbox::DiagnosticUpdater*         g_diag_updater = nullptr;
+static std::unique_ptr<blackbox::Logger>            g_info = nullptr;
+static std::unique_ptr<blackbox::Logger>            g_error = nullptr;
+static std::unique_ptr<blackbox::Logger>            g_diag_error = nullptr;
+static std::unique_ptr<diagnostic_updater::Updater> g_diag_updater = nullptr;
 
 static std::mutex                                                                       g_can_locker;
 static std::vector<std::pair<std::string, diag_cb_t>>   g_diag_list;
 
 static void diagnostic_bind(std::string tag, diag_cb_t function);
-static diagnostic_t can_diagnostics_task(void);
+static diagnostic_t diagnostics_task(void);
 
-void init(blackbox::LogRecorder* lr, blackbox::DiagnosticUpdater* du)
+void init(rclcpp::Node* node, blackbox::LogRecorder* lr)
 {
     {
         std::lock_guard<std::mutex> lock(g_locker);
@@ -35,13 +36,13 @@ void init(blackbox::LogRecorder* lr, blackbox::DiagnosticUpdater* du)
             g_diag_error = std::make_unique<blackbox::Logger>();
             g_diag_error->init(lr, blackbox::ERR, "diag_err");
             
-            g_diag_updater = du;
+            g_diag_updater = std::make_unique<diagnostic_updater::Updater>(node, 0.5);
 
             g_is_initialized = true;
         }
     }
 
-    diagnostic_bind("can_csmbus", can_diagnostics_task);
+    diagnostic_bind("can_csmbus", diagnostics_task);
 }
 
 void destructor(void)
@@ -52,7 +53,7 @@ void destructor(void)
         g_info.release();
         g_error.release();
         g_diag_error.release();
-        g_diag_updater = nullptr;
+        g_diag_updater.release();
 
         g_is_initialized = false;
     }
@@ -164,16 +165,17 @@ static void diagnostic_bind(std::string tag, diag_cb_t function)
             }
             stat.summary(lvl, diag.msg);
         };
-
-    g_locker.lock();
-    if(g_diag_updater != nullptr)
+    
     {
-        g_diag_updater->diagnostic_bind(tag, task);
+        std::lock_guard<std::mutex> lock(g_locker);
+        if(g_diag_updater != nullptr)
+        {
+            g_diag_updater->add(tag, task);
+        }
     }
-    g_locker.unlock();
 }
 
-static diagnostic_t can_diagnostics_task(void)
+static diagnostic_t diagnostics_task(void)
 {
     std::lock_guard<std::mutex> lock(g_can_locker);
 
