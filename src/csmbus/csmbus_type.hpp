@@ -5,6 +5,7 @@
 namespace csmbus
 {
 
+// GatewayのCANポートの番号
 enum struct port_t
 {
     _1 = 0,

@@ -14,17 +14,20 @@ namespace csmbus::can_csmbus
 namespace io
 {
 
+// CANフレームの構造体
 typedef struct{
     uint16_t can_id;
     uint8_t len;
     uint8_t data[8];
 }__attribute__((__packed__)) CanSMBus_packet_t;
 
+// 受信のためのバッファ
 typedef struct{
     uint8_t             count;
     CanSMBus_packet_t   packet[4];
 }__attribute__((__packed__)) CanSMBus_m2s_t;
 
+// 送信のためのバッファ
 typedef struct{
     uint8_t             count;
     CanSMBus_packet_t   packet[4];
@@ -38,10 +41,11 @@ void bind(ECId_t gw_id, ECPort_t port, CCId_t can_id, can_callback_t callback);
 void send(ECId_t gw_id, ECPort_t port, CCId_t can_id, uint16_t raw_reg, uint8_t len, const uint8_t* data);
 }
 
-
+// Canデバイスと通信するの基底クラス
 class Device
 {
 private:
+    // Can受信のコールバック関数
     void callback(uint16_t raw_reg, uint8_t len, const uint8_t* data)
     {
         if(CCTYPE_IS_SYS_REG(raw_reg))
@@ -64,6 +68,9 @@ private:
     }
 
 protected:
+    // Can受信レジスタのクラス
+    //自分で受信コールバックを実装したい場合は、このクラスを使わずにcan_callbackに実装する
+    // REG: 受信するレジスタ, T: 受信するデータの型
     template <CCReg_t REG, typename T>
     class RecvRegister
     {
@@ -113,11 +120,16 @@ protected:
     ECPort_t    _port;
     CCId_t      _can_id;
 
+    // Can受信のコールバック関数の純粋仮想関数
+    // reg: 受信したレジスタ, len: 受信したデータの長さ, data: 受信したデータ
     virtual void can_callback(CCReg_t reg, uint8_t len, const uint8_t* data) = 0;
 
+    // Can送信の関数
+    // reg: 送信するレジスタ, len: 送信するデータの長さ, data: 送信するデータ
     template <ECReg_t REG, typename T>
     struct send_reg_t
     {
+        // dev: Deviceクラスのポインタ, value: 送信するデータ
         void send(Device* dev, T value)
         {
             static_assert(sizeof(T) <= 8, "Overflowed size");
@@ -130,6 +142,9 @@ public:
     {
     }
 
+    // Canで通信するための初期化関数
+    // 複数のインスタンスが同一のCanIdをバインドしても受信できる
+    // gw_id: ゲートウェイID, port: ポート番号, can_id: 小基盤のID
     void dev_init(ECId_t gw_id, ECPort_t port, const id_t can_id)
     {
         _gw_id = gw_id;

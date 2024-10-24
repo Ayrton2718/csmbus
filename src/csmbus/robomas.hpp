@@ -59,6 +59,8 @@ Robomas_sensor_t get_sensor(ECId_t gw_id, ECPort_t port, id_t number);
 uint64_t get_max_interval(ECId_t gw_id, ECPort_t port, id_t number, bool is_reset);
 }
 
+/// @brief ロボマスモータのクラス
+// センサ情報のみを取得する場合は、RobomasSensorを使う
 class Robomas
 {
 public:
@@ -68,6 +70,7 @@ public:
         m3508 = 1
     };
 
+    // コントロールモード（速度制御、角度制御のPIDはGatewayで実行される）
     enum class mode_t
     {
         disable = robomas::Robomas_mode_DISABLE,
@@ -491,6 +494,7 @@ private:
         return result;
     }
 };
+
 
 /// @brief ロボますの回転や電流のみを参照するクラス（出力に影響を与えない）
 class RobomasSensor

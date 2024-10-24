@@ -14,30 +14,39 @@
 extern "C" {
 #endif
 
+// Ctrl通信のEtherパケットのヘッダ
+
+// ACKパケット(Gateway to PC)
 typedef struct{
     uint32_t        checksum;
 }__attribute__((__packed__))  ECCtrl_ackPacket_t;
 
+// S2M(Gateway to PC)の通信確認用のパケット
+// 一定間隔で送信し続けている
 typedef struct{
     uint8_t         is_active;
 }__attribute__((__packed__)) ECCtrl_s2mPingPacket_t;
 
+// M2S(PC to Gateway)の通信確認用のパケット
+// 一定間隔で送信し続けている
 typedef struct{
     uint8_t         is_safety_on;
 }__attribute__((__packed__)) ECCtrl_m2sPingPacket_t;
 
+// M2S(PC to Gateway)のリセット用のパケット
 typedef struct{
     uint32_t        host_seed;
 }__attribute__((__packed__)) ECCtrl_m2sResetPacket_t;
 
+
+// Ctrl通信のレジスタ番号割当
 typedef enum{
-    ECCtrl_s2mRegType_PING = 0
+    ECCtrl_s2mRegType_PING = ECReg_0,
 } ECCtrl_s2mRegType_t;
 
-
 typedef enum{
-    ECCtrl_m2sRegType_PING = 0,
-    ECCtrl_m2sRegType_RESET = 1,
+    ECCtrl_m2sRegType_PING = ECReg_0,
+    ECCtrl_m2sRegType_RESET = ECReg_1,
 } ECCtrl_m2sRegType_t;
 
 #ifdef __cplusplus

@@ -113,13 +113,16 @@ private:
     }__attribute__((__packed__)) color_t;
 
 private:
+    // Can受信レジスタ（チェックサムの計算などが必要ない場合は、can_callbackに実装せずに、RecvRegisterを使える）
     RecvRegister<CCReg_1, color_t> _color1_reg;
     RecvRegister<CCReg_2, color_t> _color2_reg;
     RecvRegister<CCReg_3, color_t> _color3_reg;
     RecvRegister<CCReg_4, color_t> _color4_reg;
 
+    /// @brief Can受信のコールバック関数
     virtual void can_callback(CCReg_t reg, uint8_t len, const uint8_t* data)
     {
+        // RecvRegisterのcan_cbを呼び出す
         _color1_reg.can_cb(reg, len, data);
         _color2_reg.can_cb(reg, len, data);
         _color3_reg.can_cb(reg, len, data);

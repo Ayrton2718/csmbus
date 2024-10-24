@@ -13,28 +13,28 @@ namespace odrive
 {
 
 enum axis_err_t {
-    INITIALIZING = 0x1,
-    SYSTEM_LEVEL = 0x2,
-    TIMING_ERROR = 0x4,
-    MISSING_ESTIMATE = 0x8,
-    BAD_CONFIG = 0x10,
-    DRV_FAULT = 0x20,
-    MISSING_INPUT = 0x40,
-    DC_BUS_OVER_VOLTAGE = 0x100,
-    DC_BUS_UNDER_VOLTAGE = 0x200,
-    DC_BUS_OVER_CURRENT = 0x400,
-    DC_BUS_OVER_REGEN_CURRENT = 0x800,
-    CURRENT_LIMIT_VIOLATION = 0x1000,
-    MOTOR_OVER_TEMP = 0x2000,
-    INVERTER_OVER_TEMP = 0x4000,
-    VELOCITY_LIMIT_VIOLATION = 0x8000,
-    POSITION_LIMIT_VIOLATION = 0x10000,
-    WATCHDOG_TIMER_EXPIRED = 0x1000000,
-    ESTOP_REQUESTED = 0x2000000,
-    SPINOUT_DETECTED = 0x4000000,
-    BRAKE_RESISTOR_DISARMED = 0x8000000,
-    THERMISTOR_DISCONNECTED = 0x10000000,
-    CALIBRATION_ERROR = 0x40000000
+    INITIALIZING = 0x1, // 初期化中に発生するエラー
+    SYSTEM_LEVEL = 0x2, // システム全体の問題、通常はハードウェアや電源関連の問題
+    TIMING_ERROR = 0x4, // タイミングに関するエラー、動作が予定の時間から外れた場合
+    MISSING_ESTIMATE = 0x8, // 推定値が欠落している場合に発生するエラー
+    BAD_CONFIG = 0x10, // 不適切な設定により発生するエラー
+    DRV_FAULT = 0x20, // ドライバの障害、MOSFETドライバに問題がある場合
+    MISSING_INPUT = 0x40, // 入力が不足している場合に発生するエラー
+    DC_BUS_OVER_VOLTAGE = 0x100, // DCバスの電圧が上限を超えた場合のエラー
+    DC_BUS_UNDER_VOLTAGE = 0x200, // DCバスの電圧が下限を下回った場合のエラー
+    DC_BUS_OVER_CURRENT = 0x400, // DCバスの電流が上限を超えた場合のエラー
+    DC_BUS_OVER_REGEN_CURRENT = 0x800, // 再生電流が上限を超えた場合のエラー
+    CURRENT_LIMIT_VIOLATION = 0x1000, // 電流が制限を超えた場合のエラー
+    MOTOR_OVER_TEMP = 0x2000, // モーターが過熱した場合のエラー
+    INVERTER_OVER_TEMP = 0x4000, // インバータが過熱した場合のエラー
+    VELOCITY_LIMIT_VIOLATION = 0x8000, // 速度が制限を超えた場合のエラー
+    POSITION_LIMIT_VIOLATION = 0x10000, // 位置が制限を超えた場合のエラー
+    WATCHDOG_TIMER_EXPIRED = 0x1000000, // ウォッチドッグタイマーの期限切れにより発生するエラー
+    ESTOP_REQUESTED = 0x2000000, // 非常停止（E-Stop）が要求された場合のエラー
+    SPINOUT_DETECTED = 0x4000000, // 制御が失敗してモーターが暴走する場合のエラー
+    BRAKE_RESISTOR_DISARMED = 0x8000000, // ブレーキ抵抗が無効になった場合のエラー
+    THERMISTOR_DISCONNECTED = 0x10000000, // サーミスタが切断された場合のエラー
+    CALIBRATION_ERROR = 0x40000000 // キャリブレーションに失敗した場合のエラー
 };
 
 typedef enum{
@@ -83,9 +83,14 @@ Odrive_sensor_t get_sensor(ECId_t gw_id, ECPort_t port, id_t number);
 uint64_t get_max_interval(ECId_t gw_id, ECPort_t port, id_t number, bool is_reset);
 }
 
+// Odriveのクラス
+// 複数のOdriveインスタンスを作成すると、モードが共有されるので注意
+// センサー情報飲み欲しい場合は、OdriveSensorを使う
 class Odrive
 {
 public:
+    // Odriveの制御モード
+    // Odrive側と設定を合わせる必要がある
     enum class mode_t
     {
         disable = odrive::Odrive_mode_DISABLE,
@@ -320,7 +325,9 @@ private:
 };
 
 
-
+// Odriveのセンサー情報を取得するクラス
+// 複数のOdriveインスタンスを定義した場合、モードが変わると、他のインスタンスにも影響が出る
+// センサー情報のみが欲しい場合は、このクラスを使う
 class OdriveSensor
 {
 public:

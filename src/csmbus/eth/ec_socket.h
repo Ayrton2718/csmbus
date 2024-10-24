@@ -1,3 +1,5 @@
+// CSMBusのUDPパケットを作成&送受信するための関数
+
 #ifndef ETH_CSMBUS_EC_SOCKET_H
 #define ETH_CSMBUS_EC_SOCKET_H
 

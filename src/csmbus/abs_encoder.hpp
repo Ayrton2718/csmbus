@@ -37,6 +37,7 @@ public:
         _is_obtained = false;
         _timeout.start();
 
+        // Diagnosticsに登録
         logger::can_diag_bind(gw_id, port, id, "AbsEncoder", [this](){
             logger::diagnostic_t diag;
             diag.status = this->is_connecting(10);
@@ -132,6 +133,7 @@ public:
     }
 
 private:
+    // AbsEncoderのデータ構造(Can Device to PC)
     typedef struct{
         int16_t rot_count;
         uint16_t angle;
@@ -177,12 +179,15 @@ private:
         return _timeout;
     }
 
+    // Canデバイスからのコールバック
     virtual void can_callback(CCReg_t reg, uint8_t len, const uint8_t* data)
     {
         if((reg == CCReg_0) && (len == sizeof(count_t)))
         {
             std::lock_guard<std::mutex> lock(_locker);
             const count_t* data_count = (const count_t*)data;
+
+            // チェックサムの確認
             if(calc_checksum(data_count) == data_count->checksum){
                 _count = *data_count;
                 _is_obtained = true;

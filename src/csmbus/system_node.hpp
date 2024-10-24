@@ -18,15 +18,17 @@ namespace csmbus
 
 enum class ether_app_t
 {
-    none,
-    robomas,
-    can_csmbus,
-    odrive,
-    robomas_csmbus,
+    none,           // 何もない
+    robomas,        // ロボマス
+    can_csmbus,     // CAN CSMBus
+    odrive,         // ODrive
+    robomas_csmbus, // ロボマスとCAN CSMBusが共通のバスに接続されている
 };
 
 typedef std::vector<std::tuple<ECId_t, ether_app_t, ether_app_t>> ether_map_t;
 
+// CSMBusのシステムノード
+// 送受信のスレッドがこのノードで動いているため、このノードは必ず一つだけ動かす
 class SystemNode : public rclcpp::Node, public blackbox::BlackBox, blackbox::LogRecorder
 {
 public:
@@ -38,11 +40,13 @@ public:
         ECCtrl_init();
     }
 
+    // Gatewayの起動待機と、通信の初期化を行う
+    // ether_mapは、GatewayのIDと、そのGatewayで動いているアプリケーションの種類を指定する
+    /// @param ether_map イーサネットのマップ
+    /// @param timeout_ms 起動待機のタイムアウト時間[ms]
     void link_up(const ether_map_t ether_map, const uint32_t timeout_ms=10000){
         this->setup_ether(ether_map, timeout_ms);
-
         ECCtrl_safetyOff();
-
     }
 
     ~SystemNode(void)
