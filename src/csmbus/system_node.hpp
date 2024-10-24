@@ -1,11 +1,11 @@
 #pragma once
 
 #include "logger/logger.hpp"
-#include "eth_csmbus/eth_csmbus.h"
+#include "eth/eth_csmbus.h"
 
 #include "robomas.hpp"
 #include "odrive.hpp"
-#include "can_csmbus/cc_io.hpp"
+#include "can/cc_io.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <vector>

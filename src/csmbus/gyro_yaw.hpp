@@ -2,10 +2,10 @@
 
 #include <vector>
 #include "csmbus_type.hpp"
-#include "can_csmbus/cc_io.hpp"
+#include "can/cc_io.hpp"
 
 #include "logger/logger.hpp"
-#include "eth_csmbus/ec_timer.hpp"
+#include "eth/ec_timer.hpp"
 
 namespace csmbus
 {

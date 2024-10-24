@@ -7,11 +7,11 @@ find_package(diagnostic_updater REQUIRED)
 tutrc_ament_init()
 
 set(CSMBUS_SRCS
-    src/csmbus/can_csmbus/cc_io.cpp
-    src/csmbus/can_csmbus/cc_type.c
-    src/csmbus/eth_csmbus/ec_ctrl.cpp
-    src/csmbus/eth_csmbus/ec_socket.cpp
-    src/csmbus/eth_csmbus/ec_type.c
+    src/csmbus/can/cc_io.cpp
+    src/csmbus/can/cc_type.c
+    src/csmbus/eth/ec_ctrl.cpp
+    src/csmbus/eth/ec_socket.cpp
+    src/csmbus/eth/ec_type.c
     src/csmbus/logger/logger.cpp
     src/csmbus/robomas.cpp
     src/csmbus/odrive.cpp

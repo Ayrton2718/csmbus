@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "../csmbus_type.hpp"
-#include "../eth_csmbus/eth_csmbus.h"
+#include "../eth/eth_csmbus.h"
 #include "../logger/logger.hpp"
 
 

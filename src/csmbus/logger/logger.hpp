@@ -3,7 +3,7 @@
 #include <string>
 #include <sys/time.h>
 #include <functional>
-#include "../eth_csmbus/ec_type.h"
+#include "../eth/ec_type.h"
 #include "../csmbus_type.hpp"
 
 #include <blackbox/bb_logger.hpp>

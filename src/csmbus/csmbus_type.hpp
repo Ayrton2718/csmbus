@@ -1,6 +1,6 @@
 #pragma once
 
-#include "eth_csmbus/ec_type.h"
+#include "eth/ec_type.h"
 
 namespace csmbus
 {

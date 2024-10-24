@@ -4,7 +4,7 @@
 #include <string>
 
 #include <rclcpp/rclcpp.hpp>
-#include "csmbus/eth_csmbus/eth_csmbus.h"
+#include "csmbus/eth/eth_csmbus.h"
 #include "csmbus/csmbus.hpp"
 
 using namespace csmbus;
