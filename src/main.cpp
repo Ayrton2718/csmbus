@@ -29,7 +29,7 @@ int main(int argc, char * argv[])
     node.push_back(system_node);
 
     // 接続確認、通信の初期化
-    system_node->link_up(ether_map, 500);
+    system_node->link_up(ether_map, 5000);
 
     for(auto it = node.begin(); it != node.end(); it++)
     {
